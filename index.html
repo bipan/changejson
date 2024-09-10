@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSONEditor | Load and save</title>
+
+  <link href="dist/jsoneditor.css" rel="stylesheet" type="text/css">
+  <script src="dist/jsoneditor.js"></script>
+
+  <script src="https://bgrins.github.io/filereader.js/filereader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js"></script>
+
+  <style>
+    html, body {
+      font: 11pt sans-serif;
+    }
+    #jsoneditor1 {
+      width: 45%;
+      height: 500px;
+	  float: left;
+    }
+	#jsoneditor2 {
+      width: 45%;
+      height: 500px;
+	  float: right;
+    }
+	#jsoneditor1 .jsoneditor-search{
+		display: none;
+	}
+  </style>
+</head>
+<body>
+<h1>Load and save JSON documents</h1>
+
+
+<div id="jsoneditor1">
+<p>
+  Load a JSON document: <input type="file" id="loadDocument" value="Load"/>
+</p>
+</div>
+<div id="jsoneditor2">
+<p>
+  Save a JSON document: <input type="button" id="saveDocument" value="Save" />
+</p>
+</div>
+<script>
+  
+  // create the editor1
+  const editor1 = new JSONEditor(document.getElementById('jsoneditor1'))
+
+  // Load a JSON document
+  FileReaderJS.setupInput(document.getElementById('loadDocument'), {
+    readAsDefault: 'Text',
+    on: {
+      load: function (event, file) {
+        editor1.setText(event.target.result)
+      }
+    }
+  })
+
+  
+  // create the editor2
+  const editor2 = new JSONEditor(document.getElementById('jsoneditor2'))
+
+  // Load a JSON document
+  FileReaderJS.setupInput(document.getElementById('loadDocument'), {
+    readAsDefault: 'Text',
+    on: {
+      load: function (event, file) {
+        editor2.setText(event.target.result)
+      }
+    }
+  })
+
+  // Save a JSON document
+  document.getElementById('saveDocument').onclick = function () {
+    // Save Dialog
+    let fname = "global"
+
+    // Check json extension in file name
+    if (fname.indexOf(".") === -1) {
+      fname = fname + ".conf"
+    } else {
+      if (fname.split('.').pop().toLowerCase() === "conf") {
+        // Nothing to do
+      } else {
+        fname = fname.split('.')[0] + ".conf"
+      }
+    }
+    const blob = new Blob([editor2.getText()], {type: 'application/json;charset=utf-8'})
+    saveAs(blob, fname)
+  }
+  function onClassName({ path, field, value }) {
+    const leftValue = _.get(jsonRight, path)
+    const rightValue = _.get(jsonLeft, path)
+
+    return _.isEqual(leftValue, rightValue)
+      ? 'the_same_element'
+      : 'different_element'
+  }
+
+  const optionsLeft = {
+    mode: 'tree',
+    onClassName: onClassName,
+    onChangeJSON: function (j) {
+      jsonLeft = j
+      window.editorRight.refresh()
+    }
+  }
+
+  const optionsRight = {
+    mode: 'tree',
+    onClassName: onClassName,
+    onChangeJSON: function (j) {
+      jsonRight = j
+      window.editorLeft.refresh()
+    }
+  }
+    window.editor1 = new JSONEditor(editor1, optionsLeft, jsonLeft)
+  window.editor2 = new JSONEditor(editor2, optionsRight, jsonRight)
+</script>
+</body>
+</html>
+
+
